@@ -63,10 +63,35 @@
             top: 10px;
             right: 10px;
             font-size: 0.9em;
-            background-color: #ffcc00;
-            color: #000;
             padding: 5px 10px;
             border-radius: 5px;
+        }
+        .players.online {
+            background-color: #28a745; /* verde */
+        }
+        .players.offline {
+            background-color: #dc3545; /* rojo */
+        }
+        .motd {
+            margin-top: 10px;
+            font-style: italic;
+            color: #aaa;
+        }
+        #loader {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         footer {
             text-align: center;
@@ -76,18 +101,35 @@
             margin-top: 20px;
             box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.5);
         }
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
+            .server h2 {
+                font-size: 1.2em;
+            }
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>World Wide Server</h1>
     </header>
+
+    <!-- Barra de búsqueda -->
+    <div class="container">
+        <input type="text" id="search" placeholder="Buscar servidor..." oninput="filterServers()" />
+    </div>
+
     <div class="container" id="servers-container">
         <!-- Aquí se generarán los servidores dinámicamente -->
+        <div id="loader" class="spinner"></div> <!-- Indicador de carga -->
     </div>
+
     <footer>
         <p>¡Encuentra y únete a los mejores servidores! &copy; 2024 - alkachfa</p>
     </footer>
+
     <script>
         // Lista de servidores
         const servers = [
@@ -107,6 +149,20 @@
 
         const container = document.getElementById("servers-container");
 
+        // Función para filtrar servidores por nombre
+        function filterServers() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const serverDivs = document.querySelectorAll('.server');
+            serverDivs.forEach(serverDiv => {
+                const serverName = serverDiv.querySelector('h2').textContent.toLowerCase();
+                if (serverName.includes(query)) {
+                    serverDiv.style.display = '';
+                } else {
+                    serverDiv.style.display = 'none';
+                }
+            });
+        }
+
         // Función para agregar servidores al contenedor
         servers.forEach(server => {
             const serverDiv = document.createElement("div");
@@ -121,6 +177,7 @@
                     <span class="tag">Minigames</span>
                 </div>
                 <div class="players" id="players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}">Cargando...</div>
+                <div class="motd" id="motd-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}">Cargando...</div>
             `;
             container.appendChild(serverDiv);
 
@@ -128,24 +185,35 @@
             fetch(`https://api.mcsrvstat.us/bedrock/2/${server.ip}:${server.port}`)
                 .then(response => {
                     if (!response.ok) {
-                        throw new Error('Respuesta de la API no válida');
+                        throw new Error(`Error de red: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
                     const playersDiv = document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
+                    const motdDiv = document.getElementById(`motd-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
+                    
                     if (data.online) {
                         playersDiv.textContent = `${data.players.online || 0} jugadores`;
+                        playersDiv.classList.add('online');
+                        playersDiv.classList.remove('offline');
+                        motdDiv.textContent = `MOTD: ${data.motd.clean || 'No disponible'}`;
                     } else {
                         playersDiv.textContent = "Offline";
+                        playersDiv.classList.add('offline');
+                        playersDiv.classList.remove('online');
+                        motdDiv.textContent = "Servidor offline";
                     }
+
+                    // Ocultar el loader una vez que los servidores están cargados
+                    document.getElementById('loader').style.display = 'none';
                 })
                 .catch(error => {
                     console.error(`Error al obtener el estado de ${server.name}:`, error);
                     document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`).textContent = "Error";
+                    document.getElementById(`motd-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`).textContent = "Error al cargar MOTD";
                 });
         });
     </script>
 </body>
 </html>
-
