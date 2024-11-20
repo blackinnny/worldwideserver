@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Servidores para Craftsman Zero & Minecraft PE 1.1.5</title>
-    <!-- Cargar Font Awesome desde CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -27,33 +25,6 @@
             font-size: 2.5em;
             text-shadow: 2px 2px 5px #000;
         }
-        .search-container {
-            text-align: center;
-            margin: 20px;
-        }
-        .search-input {
-            padding: 10px;
-            font-size: 1em;
-            width: 80%;
-            max-width: 500px;
-            border-radius: 5px;
-            border: 2px solid #1b262c;
-            background-color: #0f3460;
-            color: #fff;
-        }
-        .categories-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .category-button {
-            background-color: #1b9aaa;
-            color: white;
-            padding: 10px 20px;
-            margin: 5px;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 1em;
-        }
         .container {
             max-width: 800px;
             margin: 20px auto;
@@ -67,6 +38,10 @@
             border-radius: 5px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
             position: relative;
+            transition: transform 0.3s ease;
+        }
+        .server:hover {
+            transform: scale(1.05);
         }
         .server h2, .server p {
             margin: 5px 0;
@@ -87,7 +62,15 @@
             margin: 2px;
             font-size: 0.9em;
         }
-        .players, .ping {
+        .rating .star {
+            font-size: 1.5em;
+            color: #ddd;
+            cursor: pointer;
+        }
+        .rating .star.selected {
+            color: #ffcc00;
+        }
+        .players {
             position: absolute;
             top: 10px;
             right: 10px;
@@ -97,14 +80,34 @@
             padding: 5px 10px;
             border-radius: 5px;
         }
-        .ping {
-            top: 40px;
+        .description {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #cccccc;
         }
-        .offline {
-            background-color: #ff4d4d;
+        .join-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
         }
-        .online {
-            background-color: #4dff4d;
+        .join-button:hover {
+            background-color: #218838;
+        }
+        .category-filter {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .category-filter select {
+            padding: 10px;
+            font-size: 1em;
+            background-color: #1b262c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
         }
         footer {
             text-align: center;
@@ -114,14 +117,12 @@
             margin-top: 20px;
             box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.5);
         }
-        #loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 1.5em;
-            display: none;
+        .new-server {
+            background-color: #ff4500;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 15px;
         }
     </style>
 </head>
@@ -129,101 +130,108 @@
     <header>
         <h1>World Wide Server</h1>
     </header>
-    <div class="search-container">
-        <input type="text" id="search-input" class="search-input" placeholder="Buscar servidor..." oninput="filterServers()">
+    
+    <div class="category-filter">
+        <label for="category-filter">Filtrar por categoría:</label>
+        <select id="category-filter">
+            <option value="">Todas las categorías</option>
+            <option value="Survival">Survival</option>
+            <option value="PvP">PvP</option>
+            <option value="Minigames">Minigames</option>
+        </select>
     </div>
-    <div class="categories-container">
-        <button class="category-button" onclick="filterByCategory('PvP')">PvP</button>
-        <button class="category-button" onclick="filterByCategory('Survival')">Survival</button>
-        <button class="category-button" onclick="filterByCategory('Minigames')">Minigames</button>
-        <button class="category-button" onclick="filterByCategory('')">Todos</button>
-    </div>
+
     <div class="container" id="servers-container">
-        <!-- Aquí se generarán los servidores dinámicamente -->
+        <!-- Los servidores se generarán aquí dinámicamente -->
     </div>
-    <div id="loader">Cargando...</div>
+
     <footer>
         <p>¡Encuentra y únete a los mejores servidores! &copy; 2024 - alkachfa</p>
     </footer>
+
     <script>
+        // Lista de servidores
         const servers = [
-            { name: "Servidor destacado - 2d2t", ip: "2b2t.sytes.net", port: "10067", categories: ["PvP", "Survival"], icon: "fas fa-crosshairs" },
-            { name: "Servidor destacado - GamerLife", ip: "gamerlifepe.ddns.net", port: "25551", categories: ["PvP", "Survival", "Minigames"], icon: "fas fa-gamepad" },
-            { name: "Nexland", ip: "nexland.fun", port: "19130", categories: ["Survival"], icon: "fas fa-tree" },
-            { name: "SurvivLand", ip: "SurvivLand-online.ddns.net", port: "19580", categories: ["Survival", "PvP"], icon: "fas fa-shield-alt" },
-            { name: "Zonagamer", ip: "Zonagamer2.ddns.net", port: "10900", categories: ["Minigames"], icon: "fas fa-cogs" },
-            { name: "Breadix", ip: "BreadixPE.ru", port: "19132", categories: ["Survival"], icon: "fas fa-bread-slice" },
-            { name: "ServerMC", ip: "mc.servermc.xyz", port: "15289", categories: ["PvP", "Minigames"], icon: "fas fa-users" },
-            { name: "MCPE Craft", ip: "mcpecraft.ru", port: "19120", categories: ["Survival", "PvP"], icon: "fas fa-crafting" },
-            { name: "#", ip: "82.21.197.65", port: "19023", categories: ["Survival"], icon: "fas fa-cogs" },
-            { name: "Craft", ip: "craft.pe", port: "19132", categories: ["PvP", "Minigames"], icon: "fas fa-hammer" },
-            { name: "GamePE", ip: "gamepe.ru", port: "19132", categories: ["PvP"], icon: "fas fa-gamepad" },
-            { name: "Artmine", ip: "artminepe.ru", port: "19132", categories: ["Survival"], icon: "fas fa-paint-brush" }
+            { name: "Servidor destacado - 2d2t", ip: "2b2t.sytes.net", port: "10067", categories: ["Survival", "PvP"], description: "Este es uno de los servidores más populares de Minecraft, con un enfoque en supervivencia.", newServer: false },
+            { name: "Servidor destacado - GamerLife", ip: "gamerlifepe.ddns.net", port: "25551", categories: ["Survival"], description: "Servidor de Minecraft dedicado a los jugadores de PvE y PvP.", newServer: true },
+            { name: "Nexland", ip: "nexland.fun", port: "19130", categories: ["Minigames"], description: "Servidor dedicado a minijuegos con diversas modalidades.", newServer: false },
+            { name: "SurvivLand", ip: "SurvivLand-online.ddns.net", port: "19580", categories: ["Survival"], description: "Un servidor de supervivencia épico con una comunidad activa.", newServer: false },
+            { name: "Zonagamer", ip: "Zonagamer2.ddns.net", port: "10900", categories: ["PvP"], description: "Servidor PvP donde puedes enfrentar a otros jugadores.", newServer: true },
         ];
 
         const container = document.getElementById("servers-container");
-        const loader = document.getElementById("loader");
 
-        function renderServers(filteredServers) {
-            container.innerHTML = "";
-            filteredServers.forEach(server => {
+        // Función para renderizar los servidores
+        function renderServers(serversToRender) {
+            container.innerHTML = ''; // Limpiar la lista de servidores
+            serversToRender.forEach(server => {
                 const serverDiv = document.createElement("div");
                 serverDiv.classList.add("server");
+
+                // Resaltar servidores destacados
+                if (server.name.includes("destacado")) {
+                    serverDiv.style.border = "2px solid #ffcc00";
+                }
+
                 serverDiv.innerHTML = `
-                    <h2><i class="${server.icon}"></i> ${server.name}</h2>
+                    <h2>${server.name}</h2>
                     <p><strong>IP:</strong> ${server.ip}</p>
                     <p><strong>Puerto:</strong> ${server.port}</p>
+                    <p><strong>Categorías:</strong> ${server.categories.join(", ")}</p>
                     <div class="tags">
                         ${server.categories.map(category => `<span class="tag">${category}</span>`).join('')}
                     </div>
+                    <div class="description">
+                        <strong>Descripción:</strong> ${server.description}
+                    </div>
+                    <a href="minecraft://join/${server.ip}:${server.port}" class="join-button">Unirse al servidor</a>
+                    <div class="rating">
+                        <span class="star" data-value="1">&#9733;</span>
+                        <span class="star" data-value="2">&#9733;</span>
+                        <span class="star" data-value="3">&#9733;</span>
+                        <span class="star" data-value="4">&#9733;</span>
+                        <span class="star" data-value="5">&#9733;</span>
+                    </div>
                     <div class="players" id="players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}">Cargando...</div>
-                    <div class="ping" id="ping-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}">Cargando...</div>
+                    ${server.newServer ? `<div class="new-server">¡Nuevo!</div>` : ''}
                 `;
                 container.appendChild(serverDiv);
 
-                loader.style.display = 'block';
-
+                // Consultar el estado del servidor con API para Minecraft Bedrock
                 fetch(`https://api.mcsrvstat.us/bedrock/2/${server.ip}:${server.port}`)
                     .then(response => response.json())
                     .then(data => {
                         const playersDiv = document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
-                        const pingDiv = document.getElementById(`ping-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
                         if (data.online) {
-                            playersDiv.textContent = `${data.players.online} jugadores en línea`;
-                            playersDiv.classList.add('online');
-                            pingDiv.textContent = `Ping: ${data.ping} ms`;
-                            pingDiv.classList.add('online');
+                            playersDiv.textContent = `${data.players.online || 0} jugadores en línea`;
                         } else {
                             playersDiv.textContent = "Servidor fuera de línea";
-                            playersDiv.classList.add('offline');
-                            pingDiv.textContent = "";
-                            pingDiv.classList.add('offline');
                         }
-                    })
-                    .catch(() => {
-                        const playersDiv = document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
-                        const pingDiv = document.getElementById(`ping-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
-                        playersDiv.textContent = "Servidor fuera de línea";
-                        playersDiv.classList.add('offline');
-                        pingDiv.textContent = "";
-                        pingDiv.classList.add('offline');
                     });
+
+                // Añadir comentarios y valoraciones
+                const ratingStars = serverDiv.querySelectorAll('.rating .star');
+                ratingStars.forEach(star => {
+                    star.addEventListener('click', () => {
+                        ratingStars.forEach(star => star.classList.remove('selected'));
+                        star.classList.add('selected');
+                    });
+                });
             });
-            loader.style.display = 'none';
         }
 
-        function filterServers() {
-            const searchInput = document.getElementById("search-input").value.toLowerCase();
-            const filteredServers = servers.filter(server => server.name.toLowerCase().includes(searchInput));
+        // Filtrar por categoría
+        document.getElementById("category-filter").addEventListener("change", function() {
+            const selectedCategory = this.value;
+            const filteredServers = servers.filter(server => 
+                selectedCategory ? server.categories.includes(selectedCategory) : true
+            );
             renderServers(filteredServers);
-        }
+        });
 
-        function filterByCategory(category) {
-            const filteredServers = servers.filter(server => category === "" || server.categories.includes(category));
-            renderServers(filteredServers);
-        }
-
+        // Renderizar servidores por defecto
         renderServers(servers);
+
     </script>
 </body>
 </html>
