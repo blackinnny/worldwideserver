@@ -80,7 +80,7 @@
 </head>
 <body>
     <header>
-        <h1>Worl wide Server</h1>
+        <h1>World Wide Server</h1>
     </header>
     <div class="container" id="servers-container">
         <!-- Aquí se generarán los servidores dinámicamente -->
@@ -124,9 +124,14 @@
             `;
             container.appendChild(serverDiv);
 
-            // Consultar estado del servidor
-            fetch(`https://api.mcsrvstat.us/2/${server.ip}:${server.port}`)
-                .then(response => response.json())
+            // Consultar estado del servidor con API para Minecraft Bedrock
+            fetch(`https://api.mcsrvstat.us/bedrock/2/${server.ip}:${server.port}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Respuesta de la API no válida');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     const playersDiv = document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
                     if (data.online) {
@@ -141,6 +146,6 @@
                 });
         });
     </script>
-    &copy; 2024 - LSB
 </body>
 </html>
+
