@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servidores para Craftsman Zero / Minecraft PE 1.1.5</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(45deg, #16213e, #0f3460);
+            color: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 5px #000;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+        }
+        .server {
+            background-color: #0f3460;
+            border: 1px solid #1b262c;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .server h2, .server p {
+            margin: 5px 0;
+        }
+        .server h2 {
+            font-size: 1.5em;
+            color: #00a8cc;
+        }
+        .tags {
+            margin-top: 10px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #1b9aaa;
+            color: white;
+            border-radius: 15px;
+            margin: 2px;
+            font-size: 0.9em;
+        }
+        .players {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.9em;
+            background-color: #ffcc00;
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background: linear-gradient(45deg, #16213e, #0f3460);
+            color: #ffffff;
+            margin-top: 20px;
+            box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Worl wide Server</h1>
+    </header>
+    <div class="container" id="servers-container">
+        <!-- Aquí se generarán los servidores dinámicamente -->
+    </div>
+    <footer>
+        <p>¡Encuentra y únete a los mejores servidores!</p>
+    </footer>
+    <script>
+        // Lista de servidores
+        const servers = [
+            { name: "Servidor destacado", ip: "2b2t.sytes.net", port: "10067" },
+            { name: "Nexland", ip: "nexland.fun", port: "19130" },
+            { name: "SurvivLand", ip: "SurvivLand-online.ddns.net", port: "19580" },
+            { name: "Zonagamer", ip: "Zonagamer2.ddns.net", port: "10900" },
+            { name: "GamerLife", ip: "gamerlifepe.ddns.net", port: "25551" },
+            { name: "Breadix", ip: "BreadixPE.ru", port: "19132" },
+            { name: "ServerMC", ip: "mc.servermc.xyz", port: "15289" },
+            { name: "MCPE Craft", ip: "mcpecraft.ru", port: "19120" },
+            { name: "Servidor 82.21", ip: "82.21.197.65", port: "19023" },
+            { name: "Craft", ip: "craft.pe", port: "19132" },
+            { name: "GamePE", ip: "gamepe.ru", port: "19132" },
+            { name: "Artmine", ip: "artminepe.ru", port: "19132" }
+        ];
+
+        const container = document.getElementById("servers-container");
+
+        // Función para agregar servidores al contenedor
+        servers.forEach(server => {
+            const serverDiv = document.createElement("div");
+            serverDiv.classList.add("server");
+            serverDiv.innerHTML = `
+                <h2>${server.name}</h2>
+                <p><strong>IP:</strong> ${server.ip}</p>
+                <p><strong>Puerto:</strong> ${server.port}</p>
+                <div class="tags">
+                    <span class="tag">Survival</span>
+                    <span class="tag">PvP</span>
+                </div>
+                <div class="players" id="players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}">Cargando...</div>
+            `;
+            container.appendChild(serverDiv);
+
+            // Consultar estado del servidor
+            fetch(`https://api.mcsrvstat.us/2/${server.ip}:${server.port}`)
+                .then(response => response.json())
+                .then(data => {
+                    const playersDiv = document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`);
+                    if (data.online) {
+                        playersDiv.textContent = `${data.players.online || 0} jugadores`;
+                    } else {
+                        playersDiv.textContent = "Offline";
+                    }
+                })
+                .catch(error => {
+                    console.error(`Error al obtener el estado de ${server.name}:`, error);
+                    document.getElementById(`players-${server.ip.replace(/\./g, "-").replace(/:/g, "-")}`).textContent = "Error";
+                });
+        });
+    </script>
+</body>
+</html>
